@@ -5,6 +5,7 @@ import {
   createReturn,
   getCategories,
   getOrder,
+  getProductById,
   getProducts,
   preauthorizeRefund,
   notifyReturnInProcess,
@@ -50,6 +51,44 @@ export const searchProducts = tool({
       const message =
         err instanceof ApiRequestError ? err.message : "Unknown error";
       return { count: 0, products: [], error: message };
+    }
+  },
+});
+
+export const getProductDetails = tool({
+  description: `Get detailed information about one specific product in the Vercel swag store. Use this when the user asks for more information about a particular product. The product can be identified by either its ID or slug. If the user only provides a product name, use searchProducts first to find the correct ID or slug.`,
+  inputSchema: z.object({
+    idOrSlug: z
+      .string()
+      .min(1)
+      .describe(
+        "The exact product ID or slug. Use searchProducts first if only a product name is available.",
+      ),
+  }),
+  execute: async ({ idOrSlug }) => {
+    try {
+      const product = await getProductById(idOrSlug);
+
+      return {
+        product: {
+          id: product.id,
+          name: product.name,
+          slug: product.slug,
+          description: product.description,
+          price: product.price,
+          currency: product.currency,
+          category: product.category,
+          images: product.images,
+        },
+      };
+    } catch (err) {
+      const message =
+        err instanceof ApiRequestError ? err.message : "Unknown error";
+
+      return {
+        product: null,
+        error: message,
+      };
     }
   },
 });
