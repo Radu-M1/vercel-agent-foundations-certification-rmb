@@ -30,6 +30,7 @@ export const searchProducts = tool({
       ),
   }),
   execute: async ({ query, category }) => {
+    "use step";
     try {
       const products = await getProducts({
         search: query,
@@ -68,6 +69,7 @@ export const getProductDetails = tool({
       ),
   }),
   execute: async ({ idOrSlug }) => {
+    "use step";
     try {
       const product = await getProductById(idOrSlug);
 
@@ -99,6 +101,7 @@ export const getAllCategories = tool({
   description: `List every product category available in the Vercel swag store, along with the number of products in each. Use this when the user asks what categories exist, what kinds of products are sold, or wants to browse the store at a high level.`,
   inputSchema: z.object({}),
   execute: async () => {
+    "use step";
     try {
       const categories = await getCategories();
       return {
@@ -128,6 +131,7 @@ export const returnOrder = tool({
       .describe("Why the user is returning the order."),
   }),
   execute: async ({ orderId, reason }) => {
+    "use step";
     const run = await start(returnFlow, [orderId, reason]);
     return {
       runId: run.runId,
