@@ -1,9 +1,7 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { Loader2 } from "lucide-react";
 import { useState } from "react";
-
 import {
   Conversation,
   ConversationContent,
@@ -23,66 +21,46 @@ import {
   PromptInputTextarea,
   PromptInputTools,
 } from "@/components/ai-elements/prompt-input";
+import type { ShoppingAgentUIMessage } from "@/lib/agent";
+import { AgentProductList } from "./agent-product-list";
 
 export function AgentChat() {
   const [input, setInput] = useState("");
 
-  const { messages, error, sendMessage, status } = useChat();
+  const { messages, error, sendMessage } = useChat<ShoppingAgentUIMessage>();
 
-  const isWaiting = status === "submitted";
-  const isBusy = status === "submitted" || status === "streaming";
-
-  const handleSubmit = (_message: PromptInputMessage) => {
-    const text = input.trim();
-
-    if (!text || isBusy) return;
-
-    void sendMessage({ text });
+  const handleSubmit = (message: PromptInputMessage) => {
+    sendMessage({ text: input });
     setInput("");
   };
 
-  if (error) {
-    return <div className="p-4 text-sm text-destructive">{error.message}</div>;
-  }
+  if (error) return <div>{error.message}</div>;
 
   return (
     <div className="flex h-full min-h-0 flex-col">
       <Conversation className="flex-1">
         <ConversationContent>
-          {messages.map((message) =>
-            message.parts.map((part, index) => {
-              switch (part.type) {
+          {messages.map((m) =>
+            m.parts.map((p, i) => {
+              switch (p.type) {
                 case "text":
                   return (
-                    <Message key={`${message.id}-${index}`} from={message.role}>
+                    <Message key={`${m.id}-${i}`} from={m.role}>
                       <MessageContent>
-                        <MessageResponse>{part.text}</MessageResponse>
+                        <MessageResponse>{p.text}</MessageResponse>
                       </MessageContent>
                     </Message>
                   );
-
+                case "tool-searchProducts":
+                  return (
+                    <AgentProductList key={`${m.id}-${i}`} invocation={p} />
+                  );
                 default:
                   return null;
               }
             }),
           )}
-
-          {isWaiting && (
-            <Message from="assistant">
-              <MessageContent>
-                <div
-                  className="flex items-center gap-2 text-sm text-muted-foreground"
-                  role="status"
-                  aria-live="polite"
-                >
-                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                  <span>Thinking...</span>
-                </div>
-              </MessageContent>
-            </Message>
-          )}
         </ConversationContent>
-
         <ConversationScrollButton />
       </Conversation>
 
@@ -91,19 +69,13 @@ export function AgentChat() {
           <PromptInputBody>
             <PromptInputTextarea
               value={input}
-              onChange={(event) => setInput(event.currentTarget.value)}
+              onChange={(e) => setInput(e.currentTarget.value)}
               placeholder="Ask the agent"
-              disabled={isBusy}
             />
           </PromptInputBody>
-
           <PromptInputFooter>
             <PromptInputTools />
-
-            <PromptInputSubmit
-              status={status}
-              disabled={!input.trim() || isBusy}
-            />
+            <PromptInputSubmit status="ready" disabled={!input.trim()} />
           </PromptInputFooter>
         </PromptInput>
       </div>
