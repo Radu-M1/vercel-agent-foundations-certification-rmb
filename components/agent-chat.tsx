@@ -23,6 +23,7 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import type { ShoppingAgentUIMessage } from "@/lib/agent";
 import { AgentProductList } from "./agent-product-list";
+import { AgentProductDetails } from "./agent-product-details";
 
 export function AgentChat() {
   const [input, setInput] = useState("");
@@ -54,6 +55,14 @@ export function AgentChat() {
                 case "tool-searchProducts":
                   return (
                     <AgentProductList key={`${m.id}-${i}`} invocation={p} />
+                  );
+                case "tool-searchProducts":
+                  return (
+                    <AgentProductList key={`${m.id}-${i}`} invocation={p} />
+                  );
+                case "tool-getProductDetails":
+                  return (
+                    <AgentProductDetails key={`${m.id}-${i}`} invocation={p} />
                   );
                 default:
                   return null;
